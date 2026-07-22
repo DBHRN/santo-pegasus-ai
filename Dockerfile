@@ -1,5 +1,5 @@
 # Usar una imagen oficial de Python ligera
-FROM python:3.10-slim
+FROM python:3.12-slim
 
 # Establecer el directorio de trabajo dentro del contenedor
 WORKDIR src/app
