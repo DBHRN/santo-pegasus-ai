@@ -2,7 +2,7 @@
 FROM python:3.10-slim
 
 # Establecer el directorio de trabajo dentro del contenedor
-WORKDIR /app
+WORKDIR src/app
 
 # Copiar el archivo de dependencias primero (aprovecha el caché de Docker)
 COPY requirements.txt .
@@ -11,8 +11,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar el resto del código de la aplicación
-COPY agente_respuestas.py .
-COPY app.py .
+COPY src/agente_respuestas.py .
+COPY src/app.py .
 
 # Copiar la base de datos vectorial ya generada para que el agente tenga memoria
 COPY chroma_db/ ./chroma_db/
