@@ -25,7 +25,7 @@ def cargar_modelos():
     db = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
     
     print("Cargando modelo de Reranking...")
-    cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+    cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2", device=device)
     
     return db, cross_encoder
 
