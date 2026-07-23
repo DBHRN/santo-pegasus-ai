@@ -54,7 +54,7 @@ The project is designed following generative AI best practices:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/tu-usuario/santos-pegasus-ai.git
+   git clone https://github.com/dbhrn/santos-pegasus-ai.git
    cd santos-pegasus-ai
    ```
 
