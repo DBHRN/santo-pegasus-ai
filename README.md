@@ -3,15 +3,16 @@
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=chainlink&logoColor=white)
-![Hugging Face](https://img.shields.io/badge/Hugging_Face-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)
+![Pinecone](https://img.shields.io/badge/Pinecone-000000?style=for-the-badge&logo=pinecone&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
-![SQLite](https://img.shields.io/badge/ChromaDB-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Oracle Cloud](https://img.shields.io/badge/Oracle_Cloud-F80000?style=for-the-badge&logo=oracle&logoColor=white)
+![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=black)
 
 ## 📌 Project Overview
 
 This project is the solution to the **AluraAgente Challenge** for building a corporate virtual assistant. It implements an advanced **RAG (Retrieval-Augmented Generation)** architecture to answer employee questions based strictly on the internal knowledge base of *Santo Pegasus Soluciones*.
+
+> **🚀 Live Demo:** You can test the application live in production here: [https://santo-pegasus-ai.onrender.com/](https://santo-pegasus-ai.onrender.com/)
 
 ---
 
@@ -27,26 +28,25 @@ The project is designed following generative AI best practices:
 
 1. **Structural Extraction and Chunking:**
    Markdown documents (`.md`) are processed using `MarkdownHeaderTextSplitter` to preserve the semantic coherence of tables and logical sections, avoiding blind text cuts.
-2. **Vector Indexing (Embeddings):**
-   Text fragments are transformed into vectors using the multilingual model `paraphrase-multilingual-MiniLM-L12-v2` and stored locally in **ChromaDB**.
+2. **Vector Indexing & Cloud Storage:**
+   Text fragments are transformed into high-performance vector embeddings via OpenAI (`text-embedding-3-small`) and stored securely in **Pinecone (Cloud Vector Database)** for rapid retrieval.
 3. **Query Expansion (Query Rewriting):**
    Colloquial user queries go through a rewriting phase with the LLM to optimize technical vocabulary before searching the database.
-4. **Native Reranking:**
-   A broad search ($K=15$) is performed and then filtered using a Cross-Encoder (`ms-marco-MiniLM-L-6-v2`) via `sentence-transformers`, ensuring the LLM only receives the top 4 most relevant fragments.
+4. **Direct Context Retrieval:**
+   The retriever queries the cloud index to fetch the most relevant documentation chunks dynamically.
 5. **Safe Response Generation:**
-   OpenAI (`gpt-4o-mini`) is used with strict *System Prompts* and *Conversational Bypass* (Intent Routing) to avoid unnecessary searches on basic greetings and to ensure the AI admits when it doesn't have the information.
+   OpenAI (`gpt-4o-mini`) is used with strict *System Prompts* and *Conversational Bypass* (Intent Routing) to avoid unnecessary searches on basic greetings and to ensure the AI admits when it doesn't have the information, appending mandatory source citations.
 
 ---
 
 ## 🛠️ Tech Stack
 
 * **Base Language:** Python 3.10+
-* **LLM Models:** OpenAI (`gpt-4o-mini`)
+* **LLM & Embeddings:** OpenAI (`gpt-4o-mini`, `text-embedding-3-small`)
 * **RAG Framework:** LangChain
-* **Embeddings & Reranking:** HuggingFace / Sentence-Transformers
-* **Vector Database:** ChromaDB
-* **Frontend:** Streamlit
-* **Deployment:** Docker & Oracle Cloud Infrastructure (OCI)
+* **Vector Database:** Pinecone (Cloud)
+* **Frontend Interface:** Streamlit
+* **Containerization & Deployment:** Docker & Render
 
 ---
 
@@ -54,7 +54,7 @@ The project is designed following generative AI best practices:
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/tu-usuario/santos-pegasus-ai.git](https://github.com/tu-usuario/santos-pegasus-ai.git)
+   git clone https://github.com/tu-usuario/santos-pegasus-ai.git
    cd santos-pegasus-ai
    ```
 
@@ -72,9 +72,10 @@ The project is designed following generative AI best practices:
    pip install -r requirements.txt
    ```
 
-4. **Set up environment variables:** Create a `.env` file in the project root and add your OpenAI API Key:
-   ```
-   OPENAI_API_KEY=sk-YOUR_API_KEY
+4. **Set up environment variables:** Create a `.env` file in the project root and add your API Keys:
+   ```env
+   OPENAI_API_KEY=sk-YOUR_OPENAI_API_KEY
+   PINECONE_API_KEY=pc-YOUR_PINECONE_API_KEY
    ```
 
 5. **Run the web interface:**
