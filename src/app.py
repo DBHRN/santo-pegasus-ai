@@ -18,14 +18,14 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. Inicializar modelos con caché
+# 2. Inicializar modelos con caché (Ahora solo carga la base de datos de Pinecone)
 @st.cache_resource(show_spinner=False)
 def iniciar_ia():
     return cargar_modelos()
 
 # 3. Barra lateral corporativa (Sidebar)
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3233/3233483.png", width=100) # Un logo genérico de un pegaso/caballo
+    st.image("https://cdn-icons-png.flaticon.com/512/3233/3233483.png", width=100)
     st.title("Santo Pegasus")
     st.caption("Portal de Inteligencia Artificial")
     st.markdown("---")
@@ -38,30 +38,26 @@ with st.sidebar:
 st.title("Asistente Virtual Corporativo")
 st.markdown("Consulta instantáneamente nuestra base de conocimiento interna, manuales de arquitectura y políticas de RRHH.")
 
-# Cargar los modelos silenciosamente con un spinner bonito en el área principal
+# Cargar la base de datos silenciosamente con un spinner
 with st.spinner("Conectando con la base de datos vectorial de Pegasus..."):
-    db, cross_encoder = iniciar_ia()
+    db = iniciar_ia()  # <--- Recibimos únicamente 'db'
 
 # =========================================================
 # 5. Memoria del chat y contador de consultas
 # =========================================================
 if "mensajes" not in st.session_state:
-    # Mensaje de bienvenida automático
     st.session_state.mensajes = [
         {"rol": "assistant", "contenido": "¡Hola! Soy la IA de Santo Pegasus. ¿Qué manual o política necesitas consultar hoy?"}
     ]
 
-# Inicializar el contador de consultas en 0 si es una sesión nueva
 if "contador_consultas" not in st.session_state:
     st.session_state.contador_consultas = 0
 
-# Definir avatares personalizados
 avatares = {
     "user": "🧑‍💻",
     "assistant": "https://cdn-icons-png.flaticon.com/512/3233/3233483.png"
 }
 
-# Mostrar el historial con avatares
 for mensaje in st.session_state.mensajes:
     with st.chat_message(mensaje["rol"], avatar=avatares[mensaje["rol"]]):
         st.markdown(mensaje["contenido"])
@@ -69,26 +65,23 @@ for mensaje in st.session_state.mensajes:
 # =========================================================
 # 6. Entrada del usuario protegida por límite
 # =========================================================
-# Verificamos si el usuario ya llegó al límite (ej. 10 consultas)
 if st.session_state.contador_consultas >= 10:
     st.error("🔒 Has alcanzado el límite de 10 consultas por sesión para proteger los recursos del sistema. Por favor, recarga la página para iniciar una nueva sesión.")
 else:
     pregunta_usuario = st.chat_input("Ej: ¿Qué permisos tiene el rol ROLE_DOCTOR?")
 
     if pregunta_usuario:
-        # Sumar 1 al contador por cada pregunta que haga el usuario
         st.session_state.contador_consultas += 1
         
-        # Mostrar la pregunta del usuario
         with st.chat_message("user", avatar=avatares["user"]):
             st.markdown(pregunta_usuario)
         
         st.session_state.mensajes.append({"rol": "user", "contenido": pregunta_usuario})
 
-        # Mostrar la respuesta de la IA
         with st.chat_message("assistant", avatar=avatares["assistant"]):
             with st.spinner("Analizando documentos..."):
-                respuesta_ia = hacer_pregunta(db, cross_encoder, pregunta_usuario)
+                # <--- Llamamos a hacer_pregunta pasando solo 'db' y la pregunta
+                respuesta_ia = hacer_pregunta(db, pregunta_usuario)
                 st.markdown(respuesta_ia)
                 
         st.session_state.mensajes.append({"rol": "assistant", "contenido": respuesta_ia})

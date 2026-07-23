@@ -26,7 +26,7 @@ def cargar_modelos():
     )
     
     # Retornamos solo la base de datos (eliminamos el cross_encoder para ahorrar memoria RAM)
-    return db, None
+    return db
 
 def hacer_pregunta(db, pregunta_original):
 
