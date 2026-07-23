@@ -3,7 +3,7 @@ FROM python:3.12-slim
 WORKDIR src/app
 
 # Actualización limpia y directa de paquetes esenciales
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
     git \
