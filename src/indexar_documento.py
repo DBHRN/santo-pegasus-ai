@@ -1,8 +1,14 @@
 import os
-from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_chroma import Chroma
+from langchain_openai import OpenAIEmbeddings
+from langchain_pinecone import PineconeVectorStore
+from pathlib import Path
+from pinecone import Pinecone, ServerlessSpec
+from dotenv import load_dotenv
+
+# Buscar el archivo .env un nivel arriba (en la raíz del proyecto)
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 def procesar_archivos_md(ruta_carpeta):
     documentos_procesados = []
@@ -45,16 +51,33 @@ def procesar_archivos_md(ruta_carpeta):
 
 def crear_indice_vectorial(chunks):
     print("\nCargando modelo de embeddings multilingüe...")
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
     
-    directorio_db = "./chroma_db"
+    # Configurar Pinecone
+    # Asegúrate de tener tu PINECONE_API_KEY en tu archivo .env local
+    pc = Pinecone(api_key=os.environ.get("PINECONE_API_KEY"))
+    index_name = "santo-pegasus-index"
     
-    print("Generando embeddings y guardando en ChromaDB...")
-    db = Chroma.from_documents(documents=chunks, embedding=embeddings, persist_directory=directorio_db)
+    # Crear el índice en la nube si no existe
+    if index_name not in pc.list_indexes().names():
+        pc.create_index(
+            name=index_name,
+            dimension=1536,  # Dimensión correspondiente al modelo paraphrase-multilingual-MiniLM-L12-v2
+            metric="cosine",
+            spec=ServerlessSpec(cloud="aws", region="us-east-1")
+        )
+        print(f"Índice '{index_name}' creado exitosamente en Pinecone.")
+    
+    print("Subiendo vectores a Pinecone...")
+    db = PineconeVectorStore.from_documents(
+        documents=chunks,
+        embedding=embeddings,
+        index_name=index_name
+    )
     return db
 
 if __name__ == "__main__":
-    carpeta = "documentos_oficiales"
+    carpeta = "../documentos_oficiales"
     
     print("--- ETAPA 2: EXTRACCIÓN ESTRUCTURAL ---")
     chunks_finales = procesar_archivos_md(carpeta)

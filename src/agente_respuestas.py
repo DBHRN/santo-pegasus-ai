@@ -1,31 +1,33 @@
 import os
 from dotenv import load_dotenv
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_chroma import Chroma
+from langchain_openai import OpenAIEmbeddings  # <--- ¡Esta era la que faltaba!
+from langchain_pinecone import PineconeVectorStore
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-
-# Importamos CrossEncoder de forma nativa
 from sentence_transformers import CrossEncoder
+from pathlib import Path
 
-# 1. Cargar las variables de entorno
-load_dotenv()
+# Cargar variables de entorno apuntando a la raíz del proyecto
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
-if not os.environ.get("OPENAI_API_KEY"):
-    raise ValueError("⚠️ No se encontró OPENAI_API_KEY en el archivo .env")
+if not os.environ.get("OPENAI_API_KEY") or not os.environ.get("PINECONE_API_KEY"):
+    raise ValueError("⚠️ Faltan llaves de API en el archivo .env")
 
-# Cargamos el modelo de Reranking globalmente
 print("Cargando modelo de Reranking...")
 cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 
 def cargar_modelos():
     print("Cargando embeddings...")
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-    db = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
-    
-    print("Cargando modelo de Reranking...")
-    cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2", device=device)
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+
+    # Conexión al índice en la nube de Pinecone
+    index_name = "santo-pegasus-index"
+    db = PineconeVectorStore.from_existing_index(
+        index_name=index_name,
+        embedding=embeddings
+    )
     
     return db, cross_encoder
 
